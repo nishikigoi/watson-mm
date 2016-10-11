@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'sinatra'   # gem 'sinatra'
 require 'line/bot'  # gem 'line-bot-api'
 
@@ -25,7 +26,7 @@ post '/callback' do
       when Line::Bot::Event::MessageType::Text
         message = {
           type: 'text',
-          text: event.message['text']
+          text: event.message['text' + 'なの']
         }
         client.reply_message(event['replyToken'], message)
       end
