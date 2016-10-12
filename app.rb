@@ -24,14 +24,20 @@ post '/callback' do
     when Line::Bot::Event::Message
       case event.type
       when Line::Bot::Event::MessageType::Text
+        # message = {
+        #   type: 'text',
+        #   text: event.message['text'] + 'なのよ'
+        # }
         message = {
-          type: 'text',
-          text: event.message['text'] + 'なのよ'
+          "type": "audio",
+          "originalContentUrl": "http://www.ne.jp/asahi/music/myuu/wave/kanpai.mp3",
+          "duration": 45000
         }
         client.reply_message(event['replyToken'], message)
       end
     end
   }
-
+# http://www.d-elf.com/freebgm/Savior-of-the-Cyberspace_free_ver.mp3
+http://www.ne.jp/asahi/music/myuu/wave/kanpai.mp3
   "OK"
 end
