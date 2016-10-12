@@ -30,7 +30,7 @@ post '/callback' do
         # }
         message = {
           "type": "audio",
-          "originalContentUrl": "https://www.maruhan.co.jp/yosakoi/60sec.m4a",
+          "originalContentUrl": "http://localhost:8888/60sec.m4a",
           "duration": 60000
         }
         client.reply_message(event['replyToken'], message)
