@@ -30,14 +30,13 @@ post '/callback' do
         # }
         message = {
           "type": "audio",
-          "originalContentUrl": "http://www.ne.jp/asahi/music/myuu/wave/kanpai.mp3",
-          "duration": 45000
+          "originalContentUrl": "https://www.maruhan.co.jp/yosakoi/60sec.m4a",
+          "duration": 60000
         }
         client.reply_message(event['replyToken'], message)
       end
     end
   }
-# http://www.d-elf.com/freebgm/Savior-of-the-Cyberspace_free_ver.mp3
-http://www.ne.jp/asahi/music/myuu/wave/kanpai.mp3
+
   "OK"
 end
