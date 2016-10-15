@@ -1,12 +1,23 @@
 # -*- coding: utf-8 -*-
 require 'sinatra'   # gem 'sinatra'
 require 'line/bot'  # gem 'line-bot-api'
+require 'json'
+require 'rest-client'
 
 def client
   @client ||= Line::Bot::Client.new { |config|
     config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
     config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
   }
+end
+
+def get_userlocal_bot_resp(req)
+  request_content = {'key' => ENV["USER_LOCAL_API_KEY"], 'message' => req}
+  request_params = request_content.reduce([]) do |params, (key, value)|
+    params << "#{key.to_s}=#{value}"
+  end
+  rest = RestClient.get('https://chatbot-api.userlocal.jp/api/chat?' + request_params.join('&').to_s)
+  return JSON.parse(rest)
 end
 
 post '/callback' do
@@ -24,14 +35,9 @@ post '/callback' do
     when Line::Bot::Event::Message
       case event.type
       when Line::Bot::Event::MessageType::Text
-        # message = {
-        #   type: 'text',
-        #   text: event.message['text'] + 'なのよ'
-        # }
         message = {
-          "type": "audio",
-          "originalContentUrl": "https://www.maruhan.co.jp/yosakoi/60sec.m4a",
-          "duration": 60000
+          type: 'text',
+          text: get_userlocal_bot_resp(event.message['text'])
         }
         client.reply_message(event['replyToken'], message)
       end
