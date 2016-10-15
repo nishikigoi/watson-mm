@@ -3,7 +3,7 @@ require 'sinatra'   # gem 'sinatra'
 require 'line/bot'  # gem 'line-bot-api'
 require 'json'
 require 'rest-client'
-require 'adressable/uri'
+require 'addressable/uri'
 
 def client
   @client ||= Line::Bot::Client.new { |config|
