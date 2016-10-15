@@ -18,7 +18,7 @@ def get_userlocal_bot_resp(req)
   end
   rest = RestClient.get('https://chatbot-api.userlocal.jp/api/chat?' + request_params.join('&').to_s)
   resp = JSON.parse(rest)
-  return resp.result
+  return resp['result']
 end
 
 post '/callback' do
