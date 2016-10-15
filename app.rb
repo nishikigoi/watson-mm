@@ -18,7 +18,7 @@ def get_userlocal_bot_resp(req)
     params << "#{key.to_s}=#{value}"
   end
   url = 'https://chatbot-api.userlocal.jp/api/chat?' + request_params.join('&').to_s
-  rest = RestClient.get(Addressable::URI.parse(url))
+  rest = RestClient.get(Addressable::URI.parse(url).normalize.to_str)
   resp = JSON.parse(rest)
   return resp['result']
 end
