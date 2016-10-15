@@ -3,6 +3,7 @@ require 'sinatra'   # gem 'sinatra'
 require 'line/bot'  # gem 'line-bot-api'
 require 'json'
 require 'rest-client'
+require 'adressable/uri'
 
 def client
   @client ||= Line::Bot::Client.new { |config|
@@ -16,7 +17,8 @@ def get_userlocal_bot_resp(req)
   request_params = request_content.reduce([]) do |params, (key, value)|
     params << "#{key.to_s}=#{value}"
   end
-  rest = RestClient.get('https://chatbot-api.userlocal.jp/api/chat?' + request_params.join('&').to_s)
+  url = 'https://chatbot-api.userlocal.jp/api/chat?' + request_params.join('&').to_s
+  rest = RestClient.get(Addressable::URI.parse(url))
   resp = JSON.parse(rest)
   return resp['result']
 end
