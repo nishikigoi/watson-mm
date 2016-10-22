@@ -52,5 +52,5 @@ end
 
 get '/playlist' do
   output = {url: "https://www.youtube.com/watch?v=mFnqEo9367s&list=RDmFnqEo9367s#t=5"}
-  json output
+  output.to_json
 end
