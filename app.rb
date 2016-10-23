@@ -23,6 +23,19 @@ def get_userlocal_bot_resp(req)
   return resp['result']
 end
 
+def get_music_scenario_resp(req)
+  if req == "リクエスト"
+    return "曲をリクエストしてください"
+  else req == "マイケルのスリラー"
+    return "Michael Jackson - Thriller でよろしいでしょうか？"
+  else req == "はい"
+    return "Michael Jackson - Thriller を予約しました"
+  else req == "今の曲は何？"
+    return "宇多田ヒカル - 花束を君に です"
+  else
+    return get_userlocal_bot_resp(req)
+end
+
 post '/callback' do
   body = request.body.read
 
@@ -40,7 +53,8 @@ post '/callback' do
       when Line::Bot::Event::MessageType::Text
         message = {
           type: 'text',
-          text: get_userlocal_bot_resp(event.message['text'])
+          # text: get_userlocal_bot_resp(event.message['text'])
+          text: get_music_scenario_resp(event.message['text'])
         }
         client.reply_message(event['replyToken'], message)
       end
@@ -52,6 +66,8 @@ end
 
 get '/playlist' do
   content_type :json
-  output = {url: "https://www.youtube.com/watch?v=mFnqEo9367s"}
+  output = {
+    url: "https://www.youtube.com/watch?v=mFnqEo9367s",
+  }
   output.to_json
 end
