@@ -31,7 +31,7 @@ def get_music_scenario_resp(req)
   elsif req == "はい"
     return "Michael Jackson - Thriller を予約しました"
   elsif req == "今の曲は何？"
-    return "宇多田ヒカル - 花束を君に です"
+    return "宇多田ヒカル - 花束を君に を再生中です"
   else
     return get_userlocal_bot_resp(req)
   end
