@@ -26,11 +26,11 @@ end
 def get_music_scenario_resp(req)
   if req == "リクエスト"
     return "曲をリクエストしてください"
-  else req == "マイケルのスリラー"
+  else if req == "マイケルのスリラー"
     return "Michael Jackson - Thriller でよろしいでしょうか？"
-  else req == "はい"
+  else if req == "はい"
     return "Michael Jackson - Thriller を予約しました"
-  else req == "今の曲は何？"
+  else if req == "今の曲は何？"
     return "宇多田ヒカル - 花束を君に です"
   else
     return get_userlocal_bot_resp(req)
