@@ -67,7 +67,7 @@ end
 get '/playlist' do
   content_type :json
   output = {
-    url: "https://www.youtube.com/watch?v=mFnqEo9367s",
+    url: "https://www.youtube.com/watch?v=mFnqEo9367s"
   }
   output.to_json
 end
