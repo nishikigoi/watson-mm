@@ -106,29 +106,24 @@ post '/callback' do
       case event.type
       when Line::Bot::Event::MessageType::Text
         if event.message['text'] == "@"
-          message = {
-            "type": "template",
-            "altText": "Menu",
-            "template": {
-              "type": "buttons",
-              "title": "Menu",
-              "text": "Please select",
-              "actions": [
-                          {
-                            "type": "postback",
-                            "label": "Now Playing",
-                            "data": $nowplaying_prefix
-                          },
-                          {
-                            "type": "postback",
-                            "label": "Playlist",
-                            "data": $playlist_prefix
-                          },
-                         ]
+          title = id_to_title($playlist[0][:url].sub($uri_prefix, ""))
+          unless title.empty?
+            message = {
+              type: 'text',
+              text: title + " を再生中です"
             }
+            client.reply_message(event['replyToken'], message)
+          end
+        elsif event.message['text'] == "/"
+          title = "再生曲リスト"
+          $playlist.each do |track|
+            title += "\n" + id_to_title(track[:url].sub($uri_prefix, ""))
+          end
+          message = {
+            type: 'text',
+            text: title
           }
           client.reply_message(event['replyToken'], message)
-          break
         end
 
         message = {
@@ -154,25 +149,6 @@ post '/callback' do
           }
           client.reply_message(event['replyToken'], message)
         end
-      elsif content.start_with?($nowplaying_prefix)
-        title = id_to_title($playlist[0][:url].sub($uri_prefix, ""))
-        unless title.empty?
-          message = {
-            type: 'text',
-            text: title + " を再生中です"
-          }
-          client.reply_message(event['replyToken'], message)
-        end
-      elsif content.start_with?($playlist_prefix)
-        title = "再生曲リスト"
-        $playlist.each do |track|
-          title += "\n" + id_to_title(track[:url].sub($uri_prefix, ""))
-        end
-        message = {
-          type: 'text',
-          text: title
-        }
-        client.reply_message(event['replyToken'], message)
       end
     end
   }
