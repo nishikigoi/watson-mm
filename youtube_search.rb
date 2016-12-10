@@ -2,7 +2,6 @@
 
 require 'rubygems'
 require 'google/api_client'
-require 'trollop'
 require 'dotenv'
 
 Dotenv.load
@@ -27,12 +26,7 @@ def get_service
   return client, youtube
 end
 
-def youtube_search
-  opts = Trollop::options do
-    opt :q, 'Search term', :type => String, :default => 'Google'
-    opt :max_results, 'Max results', :type => :int, :default => 25
-  end
-
+def youtube_search(req)
   client, youtube = get_service
 
   begin
@@ -42,14 +36,13 @@ def youtube_search
       :api_method => youtube.search.list,
       :parameters => {
         :part => 'snippet',
-        :q => opts[:q],
-        :maxResults => opts[:max_results]
+        :q => req,
+        :maxResults => 5,
+        :order => 'viewCount',
       }
     )
 
     videos = []
-    channels = []
-    playlists = []
 
     # Add each result to the appropriate list, and then display the lists of
     # matching videos, channels, and playlists.
@@ -57,17 +50,13 @@ def youtube_search
       case search_result.id.kind
         when 'youtube#video'
           videos << "#{search_result.snippet.title} (#{search_result.id.videoId})"
-        when 'youtube#channel'
-          channels << "#{search_result.snippet.title} (#{search_result.id.channelId})"
-        when 'youtube#playlist'
-          playlists << "#{search_result.snippet.title} (#{search_result.id.playlistId})"
       end
     end
 
     puts "Videos:\n", videos, "\n"
-    puts "Channels:\n", channels, "\n"
-    puts "Playlists:\n", playlists, "\n"
   rescue Google::APIClient::TransmissionError => e
     puts e.result.body
   end
+
+  return search_response.data.items
 end

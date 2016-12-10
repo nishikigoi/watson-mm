@@ -41,6 +41,55 @@ def get_music_scenario_resp(req)
   end
 end
 
+$request_prefix = "action=request&v="
+$nowplaying_prefix = "action=nowplaying"
+$playlist_prefix = "action=playlist"
+$uri_prefix = "https://www.youtube.com/watch?v="
+
+def get_youtube_search_list(req)
+  column = []
+  youtube_search(req).each do |result|
+    case result.id.kind
+    when 'youtube#video'
+      item = {
+        "thumbnailImageUrl": result.snippet.thumbnails.high.url,
+        "title": result.snippet.title[0..39],
+        "text": result.snippet.description[0..59],
+        "actions": [
+                    {
+                      "type": "postback",
+                      "label": "Request",
+                      "data": $request_prefix + result.id.videoId
+                    },
+                    {
+                      "type": "uri",
+                      "label": "View on YouTube",
+                      "uri": $uri_prefix + result.id.videoId
+                    }
+                   ]
+      }
+      column.push(item)
+    end
+  end
+
+  return column
+end
+
+def id_to_title(id)
+  youtube_search(id).each do |result|
+    case result.id.kind
+    when 'youtube#video'
+      return result.snippet.title
+    end
+  end
+
+  return ""
+end
+
+
+$default_content = { url: "https://www.youtube.com/watch?v=q6T0wOMsNrI" }
+$playlist = [$default_content]
+
 post '/callback' do
   body = request.body.read
 
@@ -56,10 +105,72 @@ post '/callback' do
     when Line::Bot::Event::Message
       case event.type
       when Line::Bot::Event::MessageType::Text
+        if event.message['text'] == "@"
+          message = {
+            "type": "template",
+            "altText": "Menu",
+            "template": {
+              "type": "buttons",
+              "title": "Menu",
+              "text": "Please select",
+              "actions": [
+                          {
+                            "type": "postback",
+                            "label": "Now Playing",
+                            "data": $nowplaying_prefix
+                          },
+                          {
+                            "type": "postback",
+                            "label": "Playlist",
+                            "data": $playlist_prefix
+                          },
+                         ]
+            }
+          }
+          client.reply_message(event['replyToken'], message)
+          break
+        end
+
+        message = {
+          "type": "template",
+          "altText": "楽曲リスト表示",
+          "template": {
+            "type": "carousel",
+            "columns": get_youtube_search_list(event.message['text']),
+          }
+        }
+        client.reply_message(event['replyToken'], message)
+      end
+    when Line::Bot::Event::Postback
+      content = event['postback']['data']
+      if content.start_with?($request_prefix)
+        $playlist.push({ url: content.sub($request_prefix, $uri_prefix) })
+
+        title = id_to_title(content.sub($request_prefix, ""))
+        unless title.empty?
+          message = {
+            type: 'text',
+            text: title + " をリクエストしました"
+          }
+          client.reply_message(event['replyToken'], message)
+        end
+      elsif content.start_with?($nowplaying_prefix)
+        title = id_to_title($playlist[0][:url].sub($uri_prefix, ""))
+        unless title.empty?
+          message = {
+            type: 'text',
+            text: title + " を再生中です"
+          }
+          client.reply_message(event['replyToken'], message)
+        end
+      elsif content.start_with?($playlist_prefix)
+        title = "再生曲リスト"
+        $playlist.each do |track|
+          title += "\n" + id_to_title(track[:url].sub($uri_prefix, ""))
+        end
         message = {
           type: 'text',
-          # text: get_userlocal_bot_resp(event.message['text'])
-          text: get_music_scenario_resp(event.message['text'])
+          text: title
         }
         client.reply_message(event['replyToken'], message)
       end
@@ -69,14 +180,15 @@ post '/callback' do
   "OK"
 end
 
-get '/playlist' do
-  content_type :json
-  output = {
-    url: "https://www.youtube.com/watch?v=mFnqEo9367s"
-  }
-  output.to_json
+post '/done' do
+  $playlist.delete_at(0)
 end
 
-get '/' do
-  youtube_search
+get '/playlist' do
+  if $playlist.empty?
+    $playlist.push($default_content)
+  end
+
+  content_type :json
+  $playlist.to_json
 end
