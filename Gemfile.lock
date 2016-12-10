@@ -1,17 +1,63 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    activesupport (4.0.13)
+      i18n (~> 0.6, >= 0.6.9)
+      minitest (~> 4.2)
+      multi_json (~> 1.3)
+      thread_safe (~> 0.1)
+      tzinfo (~> 0.3.37)
     addressable (2.4.0)
+    autoparse (0.3.3)
+      addressable (>= 2.3.1)
+      extlib (>= 0.9.15)
+      multi_json (>= 1.0.0)
     domain_name (0.5.20160826)
       unf (>= 0.0.5, < 1.0.0)
+    dotenv (2.1.1)
+    extlib (0.9.16)
+    faraday (0.10.0)
+      multipart-post (>= 1.2, < 3)
+    google-api-client (0.8.7)
+      activesupport (>= 3.2, < 5.0)
+      addressable (~> 2.3)
+      autoparse (~> 0.3)
+      extlib (~> 0.9)
+      faraday (~> 0.9)
+      googleauth (~> 0.3)
+      launchy (~> 2.4)
+      multi_json (~> 1.10)
+      retriable (~> 1.4)
+      signet (~> 0.6)
+    googleauth (0.5.1)
+      faraday (~> 0.9)
+      jwt (~> 1.4)
+      logging (~> 2.0)
+      memoist (~> 0.12)
+      multi_json (~> 1.11)
+      os (~> 0.9)
+      signet (~> 0.7)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
+    i18n (0.7.0)
     json (2.0.2)
+    jwt (1.5.6)
+    launchy (2.4.3)
+      addressable (~> 2.3)
     line-bot-api (1.0.0)
+    little-plugger (1.1.4)
+    logging (2.1.0)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.10)
+    memoist (0.15.0)
     mime-types (3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0521)
+    minitest (4.7.5)
+    multi_json (1.12.1)
+    multipart-post (2.0.0)
     netrc (0.11.0)
+    os (0.9.6)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
@@ -19,11 +65,20 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    retriable (1.4.1)
+    signet (0.7.3)
+      addressable (~> 2.3)
+      faraday (~> 0.9)
+      jwt (~> 1.5)
+      multi_json (~> 1.10)
     sinatra (1.4.7)
       rack (~> 1.5)
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
+    thread_safe (0.3.5)
     tilt (2.0.5)
+    trollop (2.1.2)
+    tzinfo (0.3.52)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.2)
@@ -33,10 +88,13 @@ PLATFORMS
 
 DEPENDENCIES
   addressable
+  dotenv
+  google-api-client (> 0.7, < 0.9)
   json
   line-bot-api
   rest-client
   sinatra
+  trollop
 
 BUNDLED WITH
    1.13.2

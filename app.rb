@@ -4,6 +4,10 @@ require 'line/bot'  # gem 'line-bot-api'
 require 'json'
 require 'rest-client'
 require 'addressable/uri'
+require 'dotenv'
+require './youtube_search.rb'
+
+Dotenv.load
 
 def client
   @client ||= Line::Bot::Client.new { |config|
@@ -71,4 +75,8 @@ get '/playlist' do
     url: "https://www.youtube.com/watch?v=mFnqEo9367s"
   }
   output.to_json
+end
+
+get '/' do
+  youtube_search
 end
