@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'sinatra'   # gem 'sinatra'
+require 'sinatra/reloader'   # gem 'sinatra-contrib'
 require 'line/bot'  # gem 'line-bot-api'
 require 'json'
 require 'rest-client'
