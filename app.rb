@@ -101,7 +101,7 @@ def id_to_title(id)
 end
 
 
-$default_content = { url: "https://www.youtube.com/watch?v=q6T0wOMsNrI" }
+$default_content = { url: "https://www.youtube.com/watch?v=hlJ5DZGIDNY" }
 $playlist = [$default_content]
 
 post '/callback' do
