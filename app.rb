@@ -103,6 +103,7 @@ end
 
 $default_content = { url: "https://www.youtube.com/watch?v=hlJ5DZGIDNY" }
 $playlist = [$default_content]
+$id_list = []
 
 post '/callback' do
   body = request.body.read
@@ -154,6 +155,22 @@ post '/callback' do
               "columns": get_youtube_list($next_q, $next_page_token),
             }
           }
+        elsif event.message['text'] == "#connect"
+          unless $id_list.include?(event['source']['userId'])
+            $id_list.push(event['source']['userId'])
+            message = {
+              "type": 'text',
+              "text": "接続しました。曲のリクエストが可能です"
+            }
+          end
+        elsif event.message['text'] == "#disconnect"
+          if $id_list.include?(event['source']['userId'])
+            $id_list.delete(event['source']['userId'])
+            message = {
+              "type": 'text',
+              "text": "切断しました"
+            }
+          end
         else
           message = {
             "type": "template",
@@ -167,6 +184,15 @@ post '/callback' do
         client.reply_message(event['replyToken'], message)
       end
     when Line::Bot::Event::Postback
+      unless $id_list.include?(event['source']['userId'])
+        message = {
+          "type": 'text',
+          "text": "現在、曲のリクエストはできません"
+        }
+        client.reply_message(event['replyToken'], message)
+        break
+      end
+
       content = event['postback']['data']
       if content.start_with?($request_prefix)
         $playlist.push({ url: content.sub($request_prefix, $uri_prefix) })
