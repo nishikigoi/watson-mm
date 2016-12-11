@@ -45,16 +45,30 @@ $request_prefix = "action=request&v="
 $nowplaying_prefix = "action=nowplaying"
 $playlist_prefix = "action=playlist"
 $uri_prefix = "https://www.youtube.com/watch?v="
+$next_q = nil
+$next_page_token = nil
 
-def get_youtube_search_list(req)
+def get_youtube_list(q, next_page_token)
   column = []
-  youtube_search(req).each do |result|
+  search_results = youtube_search(q, next_page_token)
+  $next_q = q
+  $next_page_token = search_results.nextPageToken
+
+  search_results.items.each do |result|
     case result.id.kind
     when 'youtube#video'
+      title = result.snippet.title[0..39]
+      description = result.snippet.description[0..59]
+      if description.empty?
+        description = "No description"
+      end
+
       item = {
         "thumbnailImageUrl": result.snippet.thumbnails.high.url,
-        "title": result.snippet.title[0..39],
-        "text": result.snippet.description[0..59],
+        # "title": result.snippet.title[0..39],
+        # "text": result.snippet.description[0..59],
+        "title": title,
+        "text": description,
         "actions": [
                     {
                       "type": "postback",
@@ -76,7 +90,7 @@ def get_youtube_search_list(req)
 end
 
 def id_to_title(id)
-  youtube_search(id).each do |result|
+  youtube_search(id, nil).items.each do |result|
     case result.id.kind
     when 'youtube#video'
       return result.snippet.title
@@ -105,16 +119,15 @@ post '/callback' do
     when Line::Bot::Event::Message
       case event.type
       when Line::Bot::Event::MessageType::Text
-        if event.message['text'] == "@"
+        if event.message['text'] == "#nowplaying"
           title = id_to_title($playlist[0][:url].sub($uri_prefix, ""))
           unless title.empty?
             message = {
               type: 'text',
               text: title + " を再生中です"
             }
-            client.reply_message(event['replyToken'], message)
           end
-        elsif event.message['text'] == "/"
+        elsif event.message['text'] == "#playlist"
           title = "再生曲リスト"
           $playlist.each do |track|
             title += "\n" + id_to_title(track[:url].sub($uri_prefix, ""))
@@ -123,17 +136,34 @@ post '/callback' do
             type: 'text',
             text: title
           }
-          client.reply_message(event['replyToken'], message)
-        end
-
-        message = {
-          "type": "template",
-          "altText": "楽曲リスト表示",
-          "template": {
-            "type": "carousel",
-            "columns": get_youtube_search_list(event.message['text']),
+        elsif event.message['text'] == "#recommended"
+          message = {
+            "type": "template",
+            "altText": "おすすめ曲リスト",
+            "template": {
+              "type": "carousel",
+              "columns": get_youtube_list(nil, nil),
+            }
           }
-        }
+        elsif event.message['text'] == "#nextlist"
+          message = {
+            "type": "template",
+            "altText": "次のリスト",
+            "template": {
+              "type": "carousel",
+              "columns": get_youtube_list($next_q, $next_page_token),
+            }
+          }
+        else
+          message = {
+            "type": "template",
+            "altText": "楽曲リスト表示",
+            "template": {
+              "type": "carousel",
+              "columns": get_youtube_list(event.message['text'], nil),
+            }
+          }
+        end
         client.reply_message(event['replyToken'], message)
       end
     when Line::Bot::Event::Postback

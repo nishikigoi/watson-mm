@@ -26,7 +26,7 @@ def get_service
   return client, youtube
 end
 
-def youtube_search(req)
+def youtube_search(req, next_page_token)
   client, youtube = get_service
 
   begin
@@ -36,9 +36,12 @@ def youtube_search(req)
       :api_method => youtube.search.list,
       :parameters => {
         :part => 'snippet',
+        :regionCode => 'jp',
+        :pageToken => next_page_token,
         :q => req,
         :maxResults => 5,
-        :order => 'viewCount',
+        :type => 'video',
+        :safeSearch => 'strict',
       }
     )
 
@@ -49,7 +52,7 @@ def youtube_search(req)
     search_response.data.items.each do |search_result|
       case search_result.id.kind
         when 'youtube#video'
-          videos << "#{search_result.snippet.title} (#{search_result.id.videoId})"
+          videos << "#{search_result.snippet.title} (#{search_result.id.videoId}) [#{search_result.snippet.description}]"
       end
     end
 
@@ -58,5 +61,5 @@ def youtube_search(req)
     puts e.result.body
   end
 
-  return search_response.data.items
+  return search_response.data
 end
