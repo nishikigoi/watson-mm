@@ -122,7 +122,25 @@ post '/callback' do
       case event.type
       when Line::Bot::Event::MessageType::Text
         if event.message['text'] == "#nowplaying"
+          unless $id_list.include?(event['source']['userId'])
+            message = {
+              "type": 'text',
+              "text": "ホストと接続されていません"
+            }
+            client.reply_message(event['replyToken'], message)
+            break
+          end
+
           title = id_to_title($playlist[0][:url].sub($uri_prefix, ""))
+          unless $id_list.include?(event['source']['userId'])
+            message = {
+              "type": 'text',
+              "text": "ホストと接続されていません"
+            }
+            client.reply_message(event['replyToken'], message)
+            break
+          end
+
           unless title.empty?
             message = {
               type: 'text',
@@ -188,7 +206,7 @@ post '/callback' do
       unless $id_list.include?(event['source']['userId'])
         message = {
           "type": 'text',
-          "text": "現在、曲のリクエストはできません"
+          "text": "ホストと接続されていません"
         }
         client.reply_message(event['replyToken'], message)
         break
@@ -200,12 +218,13 @@ post '/callback' do
 
         title = id_to_title(content.sub($request_prefix, ""))
         unless title.empty?
-          message = {
-            type: 'text',
-            text: title + " をリクエストしました"
-          }
-          client.reply_message(event['replyToken'], message)
+          title += " を"
         end
+        message = {
+          type: 'text',
+          text: title + "リクエストしました"
+        }
+        client.reply_message(event['replyToken'], message)
       end
     end
   }
