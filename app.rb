@@ -187,7 +187,7 @@ post '/callback' do
 end
 
 post '/done' do
-  $playlist.delete_at(0)
+  $playlist = $playlist[1..$playlist.size - 1]
 end
 
 get '/playlist' do
