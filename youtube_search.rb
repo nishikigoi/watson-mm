@@ -26,6 +26,41 @@ def get_service
   return client, youtube
 end
 
+def youtube_retrieve_playlist(next_page_token)
+  client, youtube = get_service
+
+  begin
+    # Call the search.list method to retrieve results matching the specified
+    # query term.
+    search_response = client.execute!(
+      :api_method => youtube.playlist_items.list,
+      :parameters => {
+        :part => 'snippet',
+        :playlistId => 'PLFgquLnL59alxIWnf4ivu5bjPeHSlsUe9',
+        :maxResults => 5,
+        :pageToken => next_page_token,
+      }
+    )
+
+    videos = []
+
+    # Add each result to the appropriate list, and then display the lists of
+    # matching videos, channels, and playlists.
+    search_response.data.items.each do |search_result|
+      case search_result.snippet.resourceId.kind
+        when 'youtube#video'
+          videos << "#{search_result.snippet.title} (#{search_result.snippet.resourceId.videoId}) [#{search_result.snippet.description}]"
+      end
+    end
+
+    puts "Videos:\n", videos, "\n"
+  rescue Google::APIClient::TransmissionError => e
+    puts e.result.body
+  end
+
+  return search_response.data
+end
+
 def youtube_search(req, next_page_token)
   client, youtube = get_service
 
@@ -36,6 +71,7 @@ def youtube_search(req, next_page_token)
       :api_method => youtube.search.list,
       :parameters => {
         :part => 'snippet',
+        :forMine => 'true',
         :regionCode => 'jp',
         :pageToken => next_page_token,
         :q => req,

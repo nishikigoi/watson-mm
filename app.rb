@@ -48,42 +48,79 @@ $playlist_prefix = "action=playlist"
 $uri_prefix = "https://www.youtube.com/watch?v="
 $next_q = nil
 $next_page_token = nil
+$key_recommended = "key_recommended"
 
 def get_youtube_list(q, next_page_token)
   column = []
-  search_results = youtube_search(q, next_page_token)
+
   $next_q = q
-  $next_page_token = search_results.nextPageToken
+  if q == $key_recommended
+    search_results = youtube_retrieve_playlist(next_page_token)
+    $next_page_token = search_results.nextPageToken
+    search_results.items.each do |result|
+      case result.snippet.resourceId.kind
+      when 'youtube#video'
+        title = result.snippet.title[0..39]
+        description = result.snippet.description[0..59]
+        if description.empty?
+          description = "No description"
+        end
 
-  search_results.items.each do |result|
-    case result.id.kind
-    when 'youtube#video'
-      title = result.snippet.title[0..39]
-      description = result.snippet.description[0..59]
-      if description.empty?
-        description = "No description"
+        item = {
+          "thumbnailImageUrl": result.snippet.thumbnails.high.url,
+          # "title": result.snippet.title[0..39],
+          # "text": result.snippet.description[0..59],
+          "title": title,
+          "text": description,
+          "actions": [
+                      {
+                        "type": "postback",
+                        "label": "Request",
+                        "data": $request_prefix + result.snippet.resourceId.videoId
+                      },
+                      {
+                        "type": "uri",
+                        "label": "View on YouTube",
+                        "uri": $uri_prefix + result.snippet.resourceId.videoId
+                      }
+                     ]
+        }
+        column.push(item)
       end
+    end
+  else
+    search_results = youtube_search(q, next_page_token)
+    $next_page_token = search_results.nextPageToken
+    search_results.items.each do |result|
+      case result.id.kind
+      when 'youtube#video'
+        title = result.snippet.title[0..39]
+        description = result.snippet.description[0..59]
+        if description.empty?
+          description = "No description"
+        end
 
-      item = {
-        "thumbnailImageUrl": result.snippet.thumbnails.high.url,
-        # "title": result.snippet.title[0..39],
-        # "text": result.snippet.description[0..59],
-        "title": title,
-        "text": description,
-        "actions": [
-                    {
-                      "type": "postback",
-                      "label": "Request",
-                      "data": $request_prefix + result.id.videoId
-                    },
-                    {
-                      "type": "uri",
-                      "label": "View on YouTube",
-                      "uri": $uri_prefix + result.id.videoId
-                    }
-                   ]
-      }
-      column.push(item)
+        item = {
+          "thumbnailImageUrl": result.snippet.thumbnails.high.url,
+          # "title": result.snippet.title[0..39],
+          # "text": result.snippet.description[0..59],
+          "title": title,
+          "text": description,
+          "actions": [
+                      {
+                        "type": "postback",
+                        "label": "Request",
+                        "data": $request_prefix + result.id.videoId
+                      },
+                      {
+                        "type": "uri",
+                        "label": "View on YouTube",
+                        "uri": $uri_prefix + result.id.videoId
+                      }
+                     ]
+        }
+        column.push(item)
+      end
     end
   end
 
@@ -162,7 +199,7 @@ post '/callback' do
             "altText": "おすすめ曲リスト",
             "template": {
               "type": "carousel",
-              "columns": get_recommended_list(nil, nil),
+              "columns": get_youtube_list($key_recommended, nil),
             }
           }
         elsif event.message['text'] == "#nextlist"
