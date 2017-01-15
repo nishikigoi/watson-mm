@@ -273,8 +273,8 @@ end
 
 get '/playlist' do
   if $playlist.empty?
-    $playlist.push($default_content[$default_count % 3])
     $default_count += 1
+    $playlist.push($default_content[$default_count % 3])
   end
 
   content_type :json
