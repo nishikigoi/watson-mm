@@ -139,9 +139,9 @@ def id_to_title(id)
 end
 
 
-$default_content = [{ url: "https://www.youtube.com/watch?v=Jnpx42yv7h8" },
-                    { url: "https://www.youtube.com/watch?v=4yxmS9s3ahM" },
-                    { url: "https://www.youtube.com/watch?v=hlJ5DZGIDNY" }]
+$default_content = [{ url: "https://www.youtube.com/watch?v=fa8QlkEyukc" },
+                    { url: "https://www.youtube.com/watch?v=0HUEiUOCLeI" },
+                    { url: "https://www.youtube.com/watch?v=u-o2s2GSl0c" }]
 $default_count = 0
 $playlist = [$default_content[$default_count]]
 $id_list = []
