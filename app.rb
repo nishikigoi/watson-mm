@@ -139,8 +139,11 @@ def id_to_title(id)
 end
 
 
-$default_content = { url: "https://www.youtube.com/watch?v=hlJ5DZGIDNY" }
-$playlist = [$default_content]
+$default_content = [{ url: "https://www.youtube.com/watch?v=Jnpx42yv7h8" },
+                    { url: "https://www.youtube.com/watch?v=4yxmS9s3ahM" },
+                    { url: "https://www.youtube.com/watch?v=hlJ5DZGIDNY" }]
+$default_count = 0
+$playlist = [$default_content[$default_count]]
 $id_list = []
 
 post '/callback' do
@@ -270,7 +273,8 @@ end
 
 get '/playlist' do
   if $playlist.empty?
-    $playlist.push($default_content)
+    $playlist.push($default_content[$default_count % 3])
+    $default_count += 1
   end
 
   content_type :json
