@@ -71,7 +71,6 @@ def youtube_search(req, next_page_token)
       :api_method => youtube.search.list,
       :parameters => {
         :part => 'snippet',
-        :forMine => 'true',
         :regionCode => 'jp',
         :pageToken => next_page_token,
         :q => req,
