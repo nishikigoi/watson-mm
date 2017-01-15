@@ -162,7 +162,7 @@ post '/callback' do
             "altText": "おすすめ曲リスト",
             "template": {
               "type": "carousel",
-              "columns": get_youtube_list(nil, nil),
+              "columns": get_recommended_list(nil, nil),
             }
           }
         elsif event.message['text'] == "#nextlist"
@@ -174,7 +174,7 @@ post '/callback' do
               "columns": get_youtube_list($next_q, $next_page_token),
             }
           }
-        elsif event.message['text'] == "#connect"
+        elsif event.message['text'] == "#connect?host=" + ENV["SAMPLE_UUID"]
           unless $id_list.include?(event['source']['userId'])
             $id_list.push(event['source']['userId'])
             message = {
