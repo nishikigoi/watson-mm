@@ -193,9 +193,11 @@ post '/callback' do
               }
             end
           elsif event.message['text'] == "#playlist"
-            title = "再生曲リスト"
+            title = "[再生曲リスト]"
+            count = 1
             $playlist.each do |track|
-              title += "\n" + id_to_title(track[:url].sub($uri_prefix, ""))
+              title += "\n" + count.to_s + ". " + id_to_title(track[:url].sub($uri_prefix, ""))
+              count += 1
             end
             message = {
               type: 'text',
