@@ -158,65 +158,12 @@ post '/callback' do
     when Line::Bot::Event::Message
       case event.type
       when Line::Bot::Event::MessageType::Text
-        if event.message['text'] == "#nowplaying"
-          unless $id_list.include?(event['source']['userId'])
-            message = {
-              "type": 'text',
-              "text": "ホストと接続されていません"
-            }
-            client.reply_message(event['replyToken'], message)
-            break
-          end
-
-          title = id_to_title($playlist[0][:url].sub($uri_prefix, ""))
-          unless $id_list.include?(event['source']['userId'])
-            message = {
-              "type": 'text',
-              "text": "ホストと接続されていません"
-            }
-            client.reply_message(event['replyToken'], message)
-            break
-          end
-
-          unless title.empty?
-            message = {
-              type: 'text',
-              text: title + " を再生中です"
-            }
-          end
-        elsif event.message['text'] == "#playlist"
-          title = "再生曲リスト"
-          $playlist.each do |track|
-            title += "\n" + id_to_title(track[:url].sub($uri_prefix, ""))
-          end
-          message = {
-            type: 'text',
-            text: title
-          }
-        elsif event.message['text'] == "#recommended"
-          message = {
-            "type": "template",
-            "altText": "おすすめ曲リスト",
-            "template": {
-              "type": "carousel",
-              "columns": get_youtube_list($key_recommended, nil),
-            }
-          }
-        elsif event.message['text'] == "#nextlist"
-          message = {
-            "type": "template",
-            "altText": "次のリスト",
-            "template": {
-              "type": "carousel",
-              "columns": get_youtube_list($next_q, $next_page_token),
-            }
-          }
-        elsif event.message['text'] == "#connect?host=" + ENV["SAMPLE_UUID"]
+        if event.message['text'] == "#connect?host=" + ENV["SAMPLE_UUID"]
           unless $id_list.include?(event['source']['userId'])
             $id_list.push(event['source']['userId'])
             message = {
               "type": 'text',
-              "text": "接続しました。曲のリクエストが可能です"
+              "text": "ホストと接続しました"
             }
           end
         elsif event.message['text'] == "#disconnect"
@@ -224,18 +171,64 @@ post '/callback' do
             $id_list.delete(event['source']['userId'])
             message = {
               "type": 'text',
-              "text": "切断しました"
+              "text": "ホストから切断しました"
             }
           end
         else
-          message = {
-            "type": "template",
-            "altText": "楽曲リスト表示",
-            "template": {
-              "type": "carousel",
-              "columns": get_youtube_list(event.message['text'], nil),
+          unless $id_list.include?(event['source']['userId'])
+            message = {
+              "type": 'text',
+              "text": "ホストと接続されていません"
             }
-          }
+            client.reply_message(event['replyToken'], message)
+            break
+          end
+
+          if event.message['text'] == "#nowplaying"
+            title = id_to_title($playlist[0][:url].sub($uri_prefix, ""))
+            unless title.empty?
+              message = {
+                type: 'text',
+                text: title + " を再生中です"
+              }
+            end
+          elsif event.message['text'] == "#playlist"
+            title = "再生曲リスト"
+            $playlist.each do |track|
+              title += "\n" + id_to_title(track[:url].sub($uri_prefix, ""))
+            end
+            message = {
+              type: 'text',
+              text: title
+            }
+          elsif event.message['text'] == "#recommended"
+            message = {
+              "type": "template",
+              "altText": "おすすめ曲リスト",
+              "template": {
+                "type": "carousel",
+                "columns": get_youtube_list($key_recommended, nil),
+              }
+            }
+          elsif event.message['text'] == "#nextlist"
+            message = {
+              "type": "template",
+              "altText": "次のリスト",
+              "template": {
+                "type": "carousel",
+                "columns": get_youtube_list($next_q, $next_page_token),
+              }
+            }
+          else
+            message = {
+              "type": "template",
+              "altText": "楽曲リスト表示",
+              "template": {
+                "type": "carousel",
+                "columns": get_youtube_list(event.message['text'], nil),
+              }
+            }
+          end
         end
         client.reply_message(event['replyToken'], message)
       end
