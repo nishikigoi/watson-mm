@@ -46,17 +46,46 @@ $request_prefix = "action=request&v="
 $nowplaying_prefix = "action=nowplaying"
 $playlist_prefix = "action=playlist"
 $uri_prefix = "https://www.youtube.com/watch?v="
-$next_q = nil
-$next_page_token = nil
 $key_recommended = "key_recommended"
+$id_list = []
 
-def get_youtube_list(q, next_page_token)
+def push_id(id)
+  unless $id_list.find {|user| user[:id] == id}
+    $id_list.push({:id => id, :q => nil, :next_page_token => nil})
+  end
+end
+
+def remove_id(id)
+  if user = $id_list.find {|x| x[:id] == id}
+    $id_list.delete(user)
+  end
+end
+
+def has_id(id)
+  if user = $id_list.find {|x| x[:id] == id}
+    return true
+  else
+    return false
+  end
+end
+
+def set_q(id, q, next_page_token)
+  if user = $id_list.find {|x| x[:id] == id}
+    user[:q] = q
+    user[:next_page_token] = next_page_token
+  end
+end
+
+def get_user(id)
+  return $id_list.find {|x| x[:id] == id}
+end
+
+def get_youtube_list(id, q, next_page_token)
   column = []
 
-  $next_q = q
   if q == $key_recommended
     search_results = youtube_retrieve_playlist(next_page_token)
-    $next_page_token = search_results.nextPageToken
+    set_q(id, q, search_results.nextPageToken)
     search_results.items.each do |result|
       case result.snippet.resourceId.kind
       when 'youtube#video'
@@ -90,7 +119,7 @@ def get_youtube_list(q, next_page_token)
     end
   else
     search_results = youtube_search(q, next_page_token)
-    $next_page_token = search_results.nextPageToken
+    set_q(id, q, search_results.nextPageToken)
     search_results.items.each do |result|
       case result.id.kind
       when 'youtube#video'
@@ -144,7 +173,6 @@ $default_content = [{ url: "https://www.youtube.com/watch?v=fa8QlkEyukc" },
                     { url: "https://www.youtube.com/watch?v=u-o2s2GSl0c" }]
 $default_count = 0
 $playlist = [$default_content[$default_count]]
-$id_list = []
 
 post '/callback' do
   body = request.body.read
@@ -157,28 +185,25 @@ post '/callback' do
   events = client.parse_events_from(body)
 
   events.each { |event|
+    user_id = event['source']['userId']
     case event
     when Line::Bot::Event::Message
       case event.type
       when Line::Bot::Event::MessageType::Text
         if event.message['text'] == "#connect?host=" + ENV["SAMPLE_UUID"]
-          unless $id_list.include?(event['source']['userId'])
-            $id_list.push(event['source']['userId'])
-            message = {
-              "type": 'text',
-              "text": "ホストと接続しました"
-            }
-          end
+          push_id(user_id)
+          message = {
+            "type": 'text',
+            "text": "ホストと接続しました"
+          }
         elsif event.message['text'] == "#disconnect"
-          if $id_list.include?(event['source']['userId'])
-            $id_list.delete(event['source']['userId'])
-            message = {
-              "type": 'text',
-              "text": "ホストから切断しました"
-            }
-          end
+          remove_id(user_id)
+          message = {
+            "type": 'text',
+            "text": "ホストから切断しました"
+          }
         else
-          unless $id_list.include?(event['source']['userId'])
+          unless has_id(user_id)
             message = {
               "type": 'text',
               "text": "ホストと接続されていません"
@@ -212,16 +237,24 @@ post '/callback' do
               "altText": "おすすめ曲リスト",
               "template": {
                 "type": "carousel",
-                "columns": get_youtube_list($key_recommended, nil),
+                "columns": get_youtube_list(user_id, $key_recommended, nil),
               }
             }
           elsif event.message['text'] == "#nextlist"
+            user = get_user(user_id)
+            if user == nil
+              next_q = nil
+              next_page_token = nil
+            else
+              next_q = user[:q]
+              next_page_token = user[:next_page_token]
+            end
             message = {
               "type": "template",
               "altText": "次のリスト",
               "template": {
                 "type": "carousel",
-                "columns": get_youtube_list($next_q, $next_page_token),
+                "columns": get_youtube_list(user_id, next_q, next_page_token),
               }
             }
           else
@@ -230,7 +263,7 @@ post '/callback' do
               "altText": "楽曲リスト表示",
               "template": {
                 "type": "carousel",
-                "columns": get_youtube_list(event.message['text'], nil),
+                "columns": get_youtube_list(user_id, event.message['text'], nil),
               }
             }
           end
@@ -238,7 +271,7 @@ post '/callback' do
         client.reply_message(event['replyToken'], message)
       end
     when Line::Bot::Event::Postback
-      unless $id_list.include?(event['source']['userId'])
+      unless has_id(user_id)
         message = {
           "type": 'text',
           "text": "ホストと接続されていません"
