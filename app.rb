@@ -304,6 +304,12 @@ post '/done' do
   $playlist = $playlist[1..$playlist.size - 1]
 end
 
+post '/clear' do
+  if $playlist.size >= 2
+    $playlist = [$playlist[0], $playlist[$playlist.size - 1]]
+  end
+end
+
 get '/playlist' do
   if $playlist.empty?
     $default_count += 1
